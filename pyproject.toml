@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "Informed Classification"
+version = "0.1.0"
+description = "Collection of experiments in informed ml/scientific machine learning"
+authors = ["Julieanna Bacon <juliealgebra@gmail.com>"]
+readme = "README.md"
+packages = [{include = "informed_classification"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.23.5"
+scipy = "^1.9.3"
+matplotlib = "^3.6.2"
+torch = {version = "^1.13.1", platform = "linux"}
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
