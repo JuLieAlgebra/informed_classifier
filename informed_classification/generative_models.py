@@ -39,6 +39,7 @@ class NominalModel(GenerativeModel):
             cov=[
                 [self.cov(t1, t2) for t1 in range(self.dim)] for t2 in range(self.dim)
             ],
+            allow_singular=True,
         )
 
     def mean(self, t: float) -> float:
@@ -47,7 +48,9 @@ class NominalModel(GenerativeModel):
 
     def cov(self, t1: float, t2: float) -> float:
         """computes the covariance of t1, t2"""
-        return 0.01 * np.exp(-((t1 - t2) ** 2) / 8)
+        if (t1 == 0) or (t2 == 0):
+            return 0.0
+        return 0.005 * np.exp(-((t1 - t2) ** 2) / 50)
 
     def p(self, x: np.array) -> float:
         """probability density at x"""
@@ -71,15 +74,22 @@ class DisruptedModel(GenerativeModel):
             cov=[
                 [self.cov(t1, t2) for t1 in range(self.dim)] for t2 in range(self.dim)
             ],
+            allow_singular=True,
         )
 
     def mean(self, t: float) -> float:
         """computes the mean function at index t"""
-        return np.cos(t / 5) * np.exp(-t / 20)
+        return np.exp(-t / 10)
 
     def cov(self, t1: float, t2: float) -> float:
         """computes the covariance of t1, t2"""
-        return 0.01 * np.exp(-((t1 - t2) ** 2) / 8)
+        if (t1 == 0) or (t2 == 0):
+            return 0.0
+        return (
+            0.005 * np.exp(-((t1 - t2) ** 2) / 50)
+            + 0.001 * np.exp(-np.sin((t1 - t2) / 2) ** 2 / 4)
+            + 0.000001 * t1 * t2
+        )
 
     def p(self, x: np.array) -> float:
         """probability density at x"""
@@ -91,23 +101,16 @@ class DisruptedModel(GenerativeModel):
 
 
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
     d = 100
-    n = 10
+    n = 20
 
     nominal = NominalModel(d)
     disrupted = DisruptedModel(d)
 
-    fig, axs = plt.subplots(
-        1, 2, sharex=True, sharey=True
-    )  # Increase the number of subplots to 3
+    fig, axs = plt.subplots(1, 2, sharex=True, sharey=True)
     fig.suptitle("Samples")
-
     axs[0].set_title("Nominal")
     axs[0].plot(nominal.sample(n).T, alpha=0.5)
-
     axs[1].set_title("Disrupted")
     axs[1].plot(disrupted.sample(n).T, alpha=0.5)
-
     plt.show()
