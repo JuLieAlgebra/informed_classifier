@@ -39,6 +39,13 @@ if __name__ == "__main__":
     nominal = NominalModel(d)
     disrupted = DisruptedModel(d)
     b = BayesClassifier([0.5, 0.5], [nominal, disrupted])
+
+    sample = disrupted.sample(1)
     posterior = b.posterior(np.zeros(nominal.dim))
     assert np.isclose(np.sum(posterior), 1.0)
     print(posterior)
+
+    import matplotlib.pyplot as plt
+
+    plt.plot(np.arange(len(sample[0])), sample[0])
+    plt.show()
