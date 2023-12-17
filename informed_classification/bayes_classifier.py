@@ -32,7 +32,7 @@ class BayesClassifier:
 
     def likelihood(self, c: GenerativeModel, x: np.array) -> float:
         """Computes the likelihood of the data point, x, given model c"""
-        return c.p(x)
+        return np.float128(c.p(x))
 
     def joint(self, c: GenerativeModel, x: np.array) -> float:
         """Computes the posterior numerator (before normalization)"""
@@ -40,17 +40,29 @@ class BayesClassifier:
 
 
 if __name__ == "__main__":
+    # np.random.seed(0)
     d = 100
+
     nominal = NominalModel(d)
     disrupted = DisruptedModel(d)
-    b = BayesClassifier([0.5, 0.5], [nominal, disrupted])
 
-    sample = disrupted.sample(1)
-    posterior = b.posterior(np.zeros(nominal.dim))
-    assert np.isclose(np.sum(posterior), 1.0)
-    print(posterior)
+    prior = [0.5, 0.5]
+    bayes = BayesClassifier(prior, [nominal, disrupted])
 
-    import matplotlib.pyplot as plt
+    n = 10000
+    nominal_data = nominal.sample(n)
+    disrupted_data = disrupted.sample(n)
 
-    plt.plot(np.arange(len(sample[0])), sample[0])
-    plt.show()
+    correct_nominal = 0
+    for x in nominal_data:
+        if bayes.classify(x) == nominal:
+            correct_nominal += 1
+
+    correct_disrupted = 0
+    for x in disrupted_data:
+        if bayes.classify(x) == disrupted:
+            correct_disrupted += 1
+
+    print("Nominal Accuracy:", correct_nominal / n)
+    print("Disrupt Accuracy:", correct_disrupted / n)
+    print("Mean's Posterior:", bayes.posterior(disrupted.dist.mean))
