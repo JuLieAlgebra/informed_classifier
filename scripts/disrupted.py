@@ -1,5 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.stats import chi2, multivariate_normal
 
 # Set parameters for chi-square and multivariate Gaussian
@@ -23,10 +23,9 @@ normalization_constant = np.trapz(np.trapz(joint_pdf, x), y)
 normalized_joint_pdf = joint_pdf / normalization_constant
 
 # Create a filled contour plot
-plt.contourf(X, Y, normalized_joint_pdf, levels=20, cmap='viridis')
-plt.title('Custom Distribution Filled Contour Plot')
-plt.xlabel('X-axis')
-plt.ylabel('Y-axis')
-plt.colorbar(label='Probability Density')
+plt.contourf(X, Y, normalized_joint_pdf, levels=20, cmap="viridis")
+plt.title("Custom Distribution Filled Contour Plot")
+plt.xlabel("X-axis")
+plt.ylabel("Y-axis")
+plt.colorbar(label="Probability Density")
 plt.show()
-     

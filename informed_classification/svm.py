@@ -16,34 +16,10 @@ from sklearn.metrics import (
 )
 from sklearn.svm import SVC
 
-
-def get_config():
-    parser = argparse.ArgumentParser(description="SVM Training Script")
-    parser.add_argument(
-        "--config", help="YAML config file name in config/ dir.", required=True
-    )
-    args = parser.parse_args()
-
-    with open("config/" + args.config, "r") as file:
-        config = yaml.safe_load(file)
-
-    config[
-        "experiment_name"
-    ] = f"{config['dim']}dim_{config['samples']}samples_{config['ratio']}ratio_{config['train_test_validation_split'][0]}train_{config['train_test_validation_split'][1]}test_{config['train_test_validation_split'][2]}val"
-
-    return config
+from informed_classification.common_utilities import get_config, load_data
 
 
-def load_data(section):
-    data = []
-    for filename in os.listdir(section):
-        if filename.endswith(".npy"):
-            datapoint = np.load(os.path.join(section, filename))
-            data.append(datapoint)
-    return np.array(data)
-
-
-def evaluate_model(model, X, y, dataset_name):
+def evaluate_svm_model(model, X, y, dataset_name):
     y_pred = model.predict(X)
     accuracy = accuracy_score(y, y_pred)
     precision = precision_score(y, y_pred)

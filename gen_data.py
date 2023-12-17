@@ -6,20 +6,7 @@ import numpy as np
 import yaml
 
 from informed_classification import generative_models
-
-
-def get_config() -> dict:
-    parser = argparse.ArgumentParser(description="")
-    parser.add_argument(
-        "--config", help="YML config file name in config/ dir.", required=True
-    )
-    args = parser.parse_args()
-
-    with open("config/" + args.config, "r") as file:
-        # Load configuration from YAML file
-        config = yaml.safe_load(file)
-    return config
-
+from informed_classification.common_utilities import get_config
 
 config = get_config()
 dim = config["dim"]
@@ -54,11 +41,10 @@ indicies = [0]
 for i in range(0, len(train_test_validation_split)):
     indicies.append(indicies[i] + int(samples * train_test_validation_split[i]))
 
-experiment_name = f"{dim}dim_{samples}samples_{ratio}ratio_{train_test_validation_split[0]}train_{train_test_validation_split[1]}test_{train_test_validation_split[2]}val"
 sections = [
-    f"data/{experiment_name}/train",
-    f"data/{experiment_name}/test",
-    f"data/{experiment_name}/validation",
+    f"data/{config['experiment_name']}/train",
+    f"data/{config['experiment_name']}/test",
+    f"data/{config['experiment_name']}/validation",
 ]
 sample_number = 0
 for i, section in enumerate(sections):
