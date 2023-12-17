@@ -1,13 +1,11 @@
-from typing import List
-
 import numpy as np
-from generative_models import NominalModel, DisruptedModel, GenerativeModel
+from generative_models import DisruptedModel, GenerativeModel, NominalModel
 
 
 class BayesClassifier:
     """Gives MAP and posterior"""
 
-    def __init__(self, prior: List[float], classes: List[GenerativeModel]):
+    def __init__(self, prior: list[float], classes: list[GenerativeModel]):
         # prior is p(c)
         assert np.isclose(np.sum(prior), 1.0)
         self.prior = dict(zip(classes, prior))
@@ -18,7 +16,7 @@ class BayesClassifier:
         MAP = np.argmax(self.posterior)
         return self.classes[MAP]
 
-    def posterior(self, x: np.array) -> List[float]:
+    def posterior(self, x: np.array) -> list[float]:
         """Computes the posteriors for each class"""
         evidence = self.evidence(x)
         return [self.joint(c, x) / evidence for c in self.classes]

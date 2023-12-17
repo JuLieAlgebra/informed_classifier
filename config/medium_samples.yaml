@@ -1,0 +1,7 @@
+dim: 100
+samples: 100
+ratio: 0.7
+train_test_validation_split:
+  - 0.7
+  - 0.2
+  - 0.1
