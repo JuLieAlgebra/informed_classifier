@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
-from generative_models import DisruptedModel, GenerativeModel, NominalModel
 from scipy import stats as ss
+
+from informed_classification.generative_models import (
+    DisruptedModel,
+    GenerativeModel,
+    NominalModel,
+)
 
 
 class FittedGaussianModel(GenerativeModel):
@@ -13,12 +18,10 @@ class FittedGaussianModel(GenerativeModel):
 
     def __init__(self, data: np.array):
         self.mean_vec, self.cov_mat = self.mle(data)
-        print(self.mean_vec)
-        print(self.cov_mat)
         self.dist = ss.multivariate_normal(
             mean=self.mean_vec,
             cov=self.cov_mat,
-            allow_singular=True,
+            allow_singular=False,
         )
         self.dim = self.mean_vec.shape[0]
 

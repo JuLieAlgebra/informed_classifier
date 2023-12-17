@@ -1,6 +1,9 @@
 import argparse
 import os
 
+import numpy as np
+import yaml
+
 
 def get_config():
     parser = argparse.ArgumentParser(description="SVM Training Script")

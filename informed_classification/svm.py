@@ -76,6 +76,6 @@ svm_model = SVC(kernel="rbf")
 svm_model.fit(X_train, y_train)
 
 # Evaluating on Test and Validation Sets
-evaluate_model(svm_model, X_train, y_train, "Train Set")
-evaluate_model(svm_model, X_test, y_test, "Test Set")
-evaluate_model(svm_model, X_val, y_val, "Validation Set")
+evaluate_svm_model(svm_model, X_train, y_train, "Train Set")
+evaluate_svm_model(svm_model, X_test, y_test, "Test Set")
+evaluate_svm_model(svm_model, X_val, y_val, "Validation Set")

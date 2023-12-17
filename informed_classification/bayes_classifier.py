@@ -1,5 +1,10 @@
 import numpy as np
-from generative_models import DisruptedModel, GenerativeModel, NominalModel
+
+from informed_classification.generative_models import (
+    DisruptedModel,
+    GenerativeModel,
+    NominalModel,
+)
 
 
 class BayesClassifier:
@@ -11,19 +16,19 @@ class BayesClassifier:
         self.prior = dict(zip(classes, prior))
         self.classes = classes
 
-    def classify(self, x: np.array) -> GenerativeModel:
+    def classify(self, x: np.array) -> np.array:
         """Based on data point, which model is more likely? Returns the MAP"""
-        MAP = np.argmax(self.posterior)
-        return self.classes[MAP]
+        MAP = np.argmax(self.posterior(x), axis=0)
+        return MAP  # self.classes[MAP]
 
     def posterior(self, x: np.array) -> list[float]:
         """Computes the posteriors for each class"""
         evidence = self.evidence(x)
-        return [self.joint(c, x) / evidence for c in self.classes]
+        return np.array([self.joint(c, x) / evidence for c in self.classes])
 
     def evidence(self, x: np.array) -> float:
         """Computes the denominator of Bayes rule, p(x)"""
-        return np.sum([self.joint(c, x) for c in self.classes])
+        return np.sum([self.joint(c, x) for c in self.classes], axis=0)
 
     def likelihood(self, c: GenerativeModel, x: np.array) -> float:
         """Computes the likelihood of the data point, x, given model c"""
