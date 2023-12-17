@@ -1,8 +1,8 @@
 import unittest
 from typing import List, Tuple
 
-import pytest
 import numpy as np
+import pytest
 
 from informed_classification import generative_models
 
@@ -22,13 +22,14 @@ def data() -> List[Tuple[float, generative_models.GenerativeModel]]:
 def test_gauss_pdf(data: List[Tuple[float, generative_models.GenerativeModel]]):
     """For input x and a gaussian process model, tests that the pdf is close"""
     for x, model in data:
-        mu = model.dist.mean
+        mu = (model.dist.mean).reshape((1, -1))
         cov = model.dist.cov
         k = model.dim
 
         a = (2 * np.pi) ** (-k / 2)
         b = np.linalg.det(cov) ** (-1 / 2)
-        c = -1 / 2 * (x - mu).T @ np.linalg.inv(cov) @ (x - mu)
+
+        c = -1 / 2 * (x - mu) @ np.linalg.inv(cov) @ (x - mu).T
         d = np.exp(c)
 
         # cov should not be singular or close to it

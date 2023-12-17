@@ -1,0 +1,39 @@
+name: Install Python, Poetry, and project
+run-name: ${{ github.actor }}
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+env:
+  PYTHON_VERSION: "3.11"
+  POETRY_VERSION: "1.3.2"
+
+jobs:
+  Install-Koopman:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | POETRY_VERSION=${{ env.POETRY_VERSION }} python${{ env.PYTHON_VERSION }} -
+
+      - name: Install repository
+        run: |
+          poetry install
+
+      - name: Run pytest
+        run: |
+          poetry run pytest
