@@ -15,7 +15,7 @@ env:
   POETRY_VERSION: "1.3.2"
 
 jobs:
-  Install-Koopman:
+  Install-Informed-Classifier:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
