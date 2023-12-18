@@ -19,7 +19,7 @@ class BayesClassifier:
     def classify(self, x: np.array) -> np.array:
         """Based on data point, which model is more likely? Returns the MAP"""
         MAP = np.argmax(self.posterior(x), axis=1)
-        return MAP  # self.classes[MAP]
+        return MAP
 
     def posterior(self, x: np.array) -> list[float]:
         """Computes the posteriors for each class"""
@@ -59,16 +59,12 @@ if __name__ == "__main__":
     nominal_data = nominal.sample(n)
     disrupted_data = disrupted.sample(n)
 
-    correct_nominal = 0
-    for x in nominal_data:
-        if bayes.classify(x) == nominal:
-            correct_nominal += 1
+    nominal_pred = bayes.classify(nominal_data)
+    nominal_accuracy = np.sum(nominal_pred == 0) / n
 
-    correct_disrupted = 0
-    for x in disrupted_data:
-        if bayes.classify(x) == disrupted:
-            correct_disrupted += 1
+    disrupted_pred = bayes.classify(disrupted_data)
+    disrupted_accuracy = np.sum(disrupted_pred == 1) / n
 
-    print("Nominal Accuracy:", correct_nominal / n)
-    print("Disrupt Accuracy:", correct_disrupted / n)
+    print("Nominal Accuracy:", nominal_accuracy)
+    print("Disrupt Accuracy:", disrupted_accuracy)
     print("Mean's Posterior:", bayes.posterior(disrupted.dist.mean))
