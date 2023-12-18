@@ -18,11 +18,11 @@ class GenerativeModel(ABC):
         self.dim = int(dim)
 
     @abstractmethod
-    def p(x: np.array) -> float:
+    def p(self, x: np.array) -> float:
         raise NotImplementedError
 
     @abstractmethod
-    def sample(n: int) -> list[np.array]:
+    def sample(self, n: int) -> list[np.array]:
         raise NotImplementedError
 
 

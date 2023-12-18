@@ -26,8 +26,8 @@ def update_experiment_name(experiment_name, nominal_model, disrupted_model):
     nominal_version = nominal_model._version
     disrupted_version = disrupted_model._version
 
-    temp = experiment_name.split("nom")
-    experiment_name = temp[0] + f"_{nominal_version}nom_{disrupted_version}dis"
+    temp = experiment_name.split("val_")
+    experiment_name = temp[0] + f"val_{nominal_version}nom_{disrupted_version}dis"
     return experiment_name
 
 
