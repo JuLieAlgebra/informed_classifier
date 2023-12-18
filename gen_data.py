@@ -6,9 +6,9 @@ import numpy as np
 import yaml
 
 from informed_classification import generative_models
-from informed_classification.common_utilities import get_config
+from informed_classification.common_utilities import get_config, update_experiment_name
 
-config = get_config()
+config, config_filename = get_config()
 dim = config["dim"]
 samples = config["samples"]
 ratio = config["ratio"]
@@ -18,6 +18,15 @@ assert np.isclose(sum(train_test_validation_split), 1.0)
 #### MODELS
 disrupted = generative_models.DisruptedModel(dim)
 nominal = generative_models.NominalModel(dim)
+
+# Add model versions to config
+old_experiment_name = config["experiment_name"]
+del config["experiment_name"]
+with open(config_filename, "w") as file:
+    yaml.dump(config, file)
+config["experiment_name"] = update_experiment_name(
+    old_experiment_name, nominal, disrupted
+)
 
 #### SAMPLING
 disrupted_data = disrupted.sample(int(samples * (1 - ratio)))

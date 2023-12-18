@@ -1,7 +1,9 @@
 dim: 100
-samples: 10000
+disrupted_version: '2.0'
+nominal_version: '2.0'
 ratio: 0.5
+samples: 10000
 train_test_validation_split:
-  - 0.01
-  - 0.89
-  - 0.1
+- 0.01
+- 0.89
+- 0.1

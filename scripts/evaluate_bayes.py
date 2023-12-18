@@ -40,7 +40,7 @@ def evaluate_gauss_model(classifier, X, y, dataset_name):
     plt.show()
 
 
-config = get_config()
+config, _ = get_config()
 
 # Load datasets
 train_data = load_data(f"data/{config['experiment_name']}/train")
@@ -61,7 +61,7 @@ true_bayes = bayes_classifier.BayesClassifier(
 
 posterior = true_bayes.posterior(X_train)
 label = true_bayes.classify(X_train)
-assert np.allclose(np.sum(posterior, axis=0), 1.0)
+assert np.allclose(np.sum(posterior, axis=1), 1.0)
 
 # Evaluating on Test and Validation Sets
 evaluate_gauss_model(true_bayes, X_train, y_train, "Train Set")
@@ -84,7 +84,7 @@ fitted_bayes = bayes_classifier.BayesClassifier(
 
 posterior = fitted_bayes.posterior(X_train)
 label = fitted_bayes.classify(X_train)
-assert np.allclose(np.sum(posterior, axis=0), 1.0)
+assert np.allclose(np.sum(posterior, axis=1), 1.0)
 
 # Evaluating on Test and Validation Sets
 evaluate_gauss_model(fitted_bayes, X_train, y_train, "Train Set")
