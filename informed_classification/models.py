@@ -10,6 +10,16 @@ from informed_classification.generative_models import (
 )
 
 
+def clip_non_singular_matrix(matrix: np.array):
+    """We know that the covariance matrix of this problem is not degenerate/singular.
+    By doing an unconstrained MLE and then clipping, or projecting, the covariance MLE
+    to non-singular matrices, we can think of this as enforcing that prior.
+    """
+    eig_val, eig_vec = np.linalg.eigh(matrix)
+    eig_val = np.clip(eig_val, a_min=1e-6, a_max=np.inf)
+    return eig_vec @ np.diag(eig_val) @ eig_vec.T
+
+
 class FittedGaussianModel(GenerativeModel):
     """
     Fits time-varying mean and time-varying covariance of nominal model.
@@ -34,7 +44,7 @@ class FittedGaussianModel(GenerativeModel):
 
         assert cov_mat.shape[0] == mean_vec.shape[0]
 
-        return mean_vec, cov_mat
+        return mean_vec, clip_non_singular_matrix(cov_mat)
 
     def p(self, x: np.array) -> float:
         """probability density at x"""

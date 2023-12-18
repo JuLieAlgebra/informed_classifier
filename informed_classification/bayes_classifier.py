@@ -18,13 +18,19 @@ class BayesClassifier:
 
     def classify(self, x: np.array) -> np.array:
         """Based on data point, which model is more likely? Returns the MAP"""
-        MAP = np.argmax(self.posterior(x), axis=0)
+        MAP = np.argmax(self.posterior(x), axis=1)
         return MAP  # self.classes[MAP]
 
     def posterior(self, x: np.array) -> list[float]:
         """Computes the posteriors for each class"""
         evidence = self.evidence(x)
-        return np.array([self.joint(c, x) / evidence for c in self.classes])
+        post = np.array([self.joint(c, x) / evidence for c in self.classes]).T
+        if np.any(~np.isfinite(post)):
+            print(
+                f"Encountered non-finite values in output at indicies {np.where(~np.isfinite(post))}, replacing with uniform."
+            )
+            post[np.any(~np.isfinite(post), axis=1), :] = 1 / post.shape[1]
+        return post
 
     def evidence(self, x: np.array) -> float:
         """Computes the denominator of Bayes rule, p(x)"""

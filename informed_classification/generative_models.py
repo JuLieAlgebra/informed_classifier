@@ -34,6 +34,7 @@ class NominalModel(GenerativeModel):
 
     def __init__(self, dim: int):
         super().__init__(dim)
+        self._version = "2.0"
         self.dist = ss.multivariate_normal(
             mean=[self.mean(t) for t in range(self.dim)],
             cov=[
@@ -73,6 +74,7 @@ class DisruptedModel(GenerativeModel):
 
     def __init__(self, dim: int):
         super().__init__(dim)
+        self._version = "2.0"
         self.dist = ss.multivariate_normal(
             mean=[self.mean(t) for t in range(self.dim)],
             cov=[

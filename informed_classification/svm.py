@@ -59,7 +59,7 @@ def evaluate_svm_model(model, X, y, dataset_name):
     plt.show()
 
 
-config = get_config()
+config, _ = get_config()
 
 # Load datasets
 train_data = load_data(f"data/{config['experiment_name']}/train")
