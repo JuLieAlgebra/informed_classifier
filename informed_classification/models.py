@@ -10,7 +10,7 @@ from informed_classification.generative_models import (
 )
 
 
-def clip_non_singular_matrix(matrix: np.array):
+def regularize_singular_cov(matrix: np.array):
     """We know that the covariance matrix of this problem is not degenerate/singular.
     By doing an unconstrained MLE and then clipping, or projecting, the covariance MLE
     to non-singular matrices, we can think of this as enforcing that prior.
@@ -37,14 +37,14 @@ class FittedGaussianModel(GenerativeModel):
 
     def mle(self, data: np.array):
         if data.shape[0] == 1:
-            cov_mat = np.zeros(data.shape[1])
+            cov_mat = np.zeros((data.shape[1], data.shape[1]))
         else:
             cov_mat = np.cov(data, rowvar=False)
         mean_vec = np.mean(data, axis=0)
 
         assert cov_mat.shape[0] == mean_vec.shape[0]
 
-        return mean_vec, clip_non_singular_matrix(cov_mat)
+        return mean_vec, regularize_singular_cov(cov_mat)
 
     def p(self, x: np.array) -> float:
         """probability density at x"""

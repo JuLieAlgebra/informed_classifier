@@ -10,7 +10,7 @@ def test_non_singular_matrix():
     assert np.linalg.det(matrix) != 0  # Ensure it's non-singular
 
     # Process the matrix
-    processed_matrix = models.clip_non_singular_matrix(matrix)
+    processed_matrix = models.regularize_singular_cov(matrix)
 
     # Check if the processed matrix is equal to the original matrix
     np.testing.assert_array_almost_equal(processed_matrix, matrix, decimal=6)
@@ -22,7 +22,7 @@ def test_singular_matrix():
     assert np.isclose(np.linalg.det(matrix), 0)  # Ensure it's singular
 
     # Process the matrix
-    processed_matrix = models.clip_non_singular_matrix(matrix)
+    processed_matrix = models.regularize_singular_cov(matrix)
 
     # Check if the processed matrix is no longer singular
     assert np.linalg.det(processed_matrix) != 0
