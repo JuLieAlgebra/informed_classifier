@@ -1,6 +1,7 @@
 """Generative models"""
 
 from abc import ABC, abstractmethod
+from typing import Union
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -18,7 +19,7 @@ class GenerativeModel(ABC):
         self.dim = int(dim)
 
     @abstractmethod
-    def p(self, x: np.array) -> float:
+    def p(self, x: Union[float, np.array]) -> Union[float, np.array]:
         raise NotImplementedError
 
     @abstractmethod
@@ -43,11 +44,13 @@ class NominalModel(GenerativeModel):
             allow_singular=False,
         )
 
-    def mean(self, t: float) -> float:
+    def mean(self, t: Union[float, np.array]) -> Union[float, np.array]:
         """computes the mean function at index t"""
         return np.exp(-t / 10)
 
-    def cov(self, t1: float, t2: float) -> float:
+    def cov(
+        self, t1: Union[float, np.array], t2: Union[float, np.array]
+    ) -> Union[float, np.array]:
         """computes the covariance of t1, t2"""
         if (t1 == 0) or (t2 == 0):
             if t1 == t2:
@@ -57,11 +60,11 @@ class NominalModel(GenerativeModel):
         noise = 1e-6 if t1 == t2 else 0.0
         return process + noise
 
-    def p(self, x: np.array) -> float:
+    def p(self, x: Union[float, np.array]) -> Union[float, np.array]:
         """probability density at x"""
         return self.dist.pdf(x)
 
-    def sample(self, n: int) -> list[np.array]:
+    def sample(self, n: int) -> np.array:
         """samples from the nominal model"""
         return self.dist.rvs(size=n).reshape((n, self.dim))
 
@@ -83,11 +86,13 @@ class DisruptedModel(GenerativeModel):
             allow_singular=False,
         )
 
-    def mean(self, t: float) -> float:
+    def mean(self, t: Union[float, np.array]) -> Union[float, np.array]:
         """computes the mean function at index t"""
         return np.exp(-t / 10)
 
-    def cov(self, t1: float, t2: float) -> float:
+    def cov(
+        self, t1: Union[float, np.array], t2: Union[float, np.array]
+    ) -> Union[float, np.array]:
         """computes the covariance of t1, t2"""
         if (t1 == 0) or (t2 == 0):
             if t1 == t2:
@@ -98,11 +103,11 @@ class DisruptedModel(GenerativeModel):
         disruption = 1e-7 * t1 * t2 + 1e-3 * np.exp(-np.sin((t1 - t2) / 2.0) ** 2 / 4.0)
         return process + noise + 1e-1 * disruption
 
-    def p(self, x: np.array) -> float:
+    def p(self, x: Union[float, np.array]) -> Union[float, np.array]:
         """probability density at x"""
         return self.dist.pdf(x)
 
-    def sample(self, n: int) -> list[np.array]:
+    def sample(self, n: int) -> np.array:
         """samples from the disrupted model"""
         return self.dist.rvs(size=n).reshape((n, self.dim))
 

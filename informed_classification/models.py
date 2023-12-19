@@ -10,7 +10,7 @@ from informed_classification.generative_models import (
 )
 
 
-def regularize_singular_cov(matrix: np.array, a_min: int = 1e-6):
+def regularize_singular_cov(matrix: np.array, a_min: float = 1e-6) -> np.array:
     """We know that the covariance matrix of this problem is not degenerate/singular.
     By doing an unconstrained MLE and then clipping, or projecting, the covariance MLE
     to non-singular matrices, we can think of this as enforcing that prior.
@@ -24,6 +24,9 @@ class FittedGaussianModel(GenerativeModel):
     """
     Fits mean vector and covariance matrix of input data.
     Assumes underlying process is a Gaussian Process/Multivariate Normal.
+
+    Inputs:
+        data: Assumed to be (n_samples, time_dimension) with no labels included.
     """
 
     def __init__(self, data: np.array):
@@ -35,7 +38,7 @@ class FittedGaussianModel(GenerativeModel):
         )
         self.dim = self.mean_vec.shape[0]
 
-    def mle(self, data: np.array):
+    def mle(self, data: np.array) -> tuple[np.array, np.array]:
         if data.shape[0] == 1:
             cov_mat = np.zeros((data.shape[1], data.shape[1]))
         else:
@@ -54,11 +57,23 @@ class FittedGaussianModel(GenerativeModel):
         """samples from the nominal model"""
         return self.dist.rvs(size=n).reshape((n, self.dim))
 
+    def plot(self, title: str = ""):
+        """
+        Plot heat map of covariance matrix, plot 10 sample trajectories, and plot fitted mean
+        function.
+        """
+        pass
+
 
 class FittedMeanGaussianModel(FittedGaussianModel):
     """
     Fits mean vector of input data, uses true process's covariance matrix.
     Assumes underlying process is a Gaussian Process/Multivariate Normal.
+
+    Inputs:
+        data: Assumed to be (n_samples, time_dimension) with no labels included.
+        process_type: Either 'nominal' or 'disrupted'. Defines which covariance matrix
+                      is assumed to be known and will be used.
     """
 
     def __init__(self, data: np.array, process_type: str):
@@ -73,7 +88,7 @@ class FittedMeanGaussianModel(FittedGaussianModel):
         )
         self.dim = self.mean_vec.shape[0]
 
-    def mle(self, data: np.array):
+    def mle(self, data: np.array) -> np.array:
         mean_vec = np.mean(data, axis=0)
         return mean_vec
 
@@ -82,6 +97,11 @@ class FittedCovGaussianModel(FittedGaussianModel):
     """
     Fits covariance matrix of input data, uses true process's mean vector.
     Assumes underlying process is a Gaussian Process/Multivariate Normal.
+
+    Inputs:
+        data: Assumed to be (n_samples, time_dimension) with no labels included.
+        process_type: Either 'nominal' or 'disrupted'. Defines which mean vector
+                      is assumed to be known and will be used.
     """
 
     def __init__(self, data: np.array, process_type: str):
@@ -96,7 +116,7 @@ class FittedCovGaussianModel(FittedGaussianModel):
         )
         self.dim = self.mean_vec.shape[0]
 
-    def mle(self, data: np.array):
+    def mle(self, data: np.array) -> np.array:
         if data.shape[0] == 1:
             cov_mat = np.zeros((data.shape[1], data.shape[1]))
         else:
