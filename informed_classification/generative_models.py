@@ -115,9 +115,11 @@ if __name__ == "__main__":
     disrupted = DisruptedModel(d)
 
     fig, axs = plt.subplots(1, 2, sharex=True, sharey=True)
-    fig.suptitle("Samples")
+    fig.suptitle("Samples from Nominal and Disrupted Time Series")
     axs[0].set_title("Nominal")
+    axs[0].set_xlabel("Time")
     axs[0].plot(nominal.sample(n).T, alpha=0.5)
     axs[1].set_title("Disrupted")
+    axs[1].set_xlabel("Time")
     axs[1].plot(disrupted.sample(n).T, alpha=0.5)
     plt.show()

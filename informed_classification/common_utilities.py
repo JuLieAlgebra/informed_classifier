@@ -5,13 +5,18 @@ import numpy as np
 import yaml
 
 
+def cli():
+    parser = argparse.ArgumentParser(description="SVM Training Script")
+    parser.add_argument(
+        "--config", help="YAML config file name in config/ dir.", required=True
+    )
+    args = parser.parse_args()
+    return args
+
+
 def get_config(config_filename: str = None):
     if config_filename is None:
-        parser = argparse.ArgumentParser(description="SVM Training Script")
-        parser.add_argument(
-            "--config", help="YAML config file name in config/ dir.", required=True
-        )
-        args = parser.parse_args()
+        args = cli()
         config_filename = "config/" + args.config
     with open(config_filename, "r") as file:
         config = yaml.safe_load(file)
@@ -31,7 +36,7 @@ def update_experiment_name(experiment_name, nominal_model, disrupted_model):
     return experiment_name
 
 
-def load_data(section):
+def load_data(section: str):
     data = []
     for filename in os.listdir(section):
         if filename.endswith(".npy"):

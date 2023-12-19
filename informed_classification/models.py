@@ -22,7 +22,7 @@ def regularize_singular_cov(matrix: np.array, a_min: int = 1e-6):
 
 class FittedGaussianModel(GenerativeModel):
     """
-    Fits mean and covariance of input data.
+    Fits mean vector and covariance matrix of input data.
     Assumes underlying process is a Gaussian Process/Multivariate Normal.
     """
 
@@ -57,7 +57,7 @@ class FittedGaussianModel(GenerativeModel):
 
 class FittedMeanGaussianModel(FittedGaussianModel):
     """
-    Fits mean of input data, uses true process's covariance.
+    Fits mean vector of input data, uses true process's covariance matrix.
     Assumes underlying process is a Gaussian Process/Multivariate Normal.
     """
 
@@ -80,7 +80,7 @@ class FittedMeanGaussianModel(FittedGaussianModel):
 
 class FittedCovGaussianModel(FittedGaussianModel):
     """
-    Fits covariance of input data.
+    Fits covariance matrix of input data, uses true process's mean vector.
     Assumes underlying process is a Gaussian Process/Multivariate Normal.
     """
 
