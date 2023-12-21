@@ -3,6 +3,7 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from sklearn.metrics import (
     accuracy_score,
@@ -16,50 +17,17 @@ from sklearn.metrics import (
 from sklearn.model_selection import KFold
 
 from informed_classification import bayes_classifier, generative_models, models
+from informed_classification.analysis import (
+    evaluate_gauss_model,
+    plot_boxplots,
+    plot_cm_matrix,
+)
 from informed_classification.common_utilities import get_config, load_data
 
-
-def evaluate_gauss_model(
-    classifier, X, y, dataset_name, filepath: str = None
-) -> tuple[dict, np.array]:
-    y_pred = classifier.classify(X)
-    accuracy = accuracy_score(y, y_pred)
-    precision = precision_score(y, y_pred)
-    recall = recall_score(y, y_pred)
-    f1 = f1_score(y, y_pred)
-
-    performance = {
-        "dataset_name": dataset_name,
-        "accuracy": accuracy,
-        "precision": precision,
-        "recall": recall,
-        "f1": f1,
-    }
-    print(f"Metrics for {dataset_name}:")
-    print(f"Accuracy: {accuracy:.2f}")
-    print(f"Precision: {precision:.2f}")
-    print(f"Recall: {recall:.2f}")
-    print(f"F1 Score: {f1:.2f}")
-
-    return performance, y_pred
-
-
-def plot_cm_matrix(
-    y, y_pred, n_training_samples, dataset_name, model_name, save, filepath: str
-):
-    # Confusion Matrix
-    cm = confusion_matrix(y, y_pred)
-    sns.heatmap(cm, annot=True, fmt="d")
-    plt.title(
-        f"Confusion Matrix for {model_name} {dataset_name}\\ with {n_training_samples} training points"
-    )
-    plt.ylabel("Actual label")
-    plt.xlabel("Predicted label")
-    if save:
-        plt.savefig(filepath)
-    else:
-        plt.show()
-
+# Evaluating on Test and Validation Sets
+# _, _ = evaluate_gauss_model(true_bayes, training_fold, y_train[train_ids], "Train Set")
+# _, _ = evaluate_gauss_model(true_bayes, X_test, y_test, "Test Set")
+# _, _ = evaluate_gauss_model(true_bayes, X_val, y_val, "Validation Set")
 
 config, _ = get_config()
 
@@ -81,9 +49,10 @@ true_bayes = bayes_classifier.BayesClassifier(
 )
 
 ### If I want each sample size to be 20, then I have to give kfold roughly sample*5*2
-sample_sizes = [20, 40, 50, 80, 100, 200, 300, 500, 800, 1000, 2000]
+sample_sizes = [3, 5, 8, 10, 15, 20, 40, 50, 80, 100, 200, 300, 500, 800, 1000, 2000]
 k_folds = 5
-k_fold_metrics = {s: None for s in sample_sizes}
+k_fold_metrics = {size: {"train": [], "test": [], "val": []} for size in sample_sizes}
+
 for sample_size in sample_sizes:
     kfold = KFold(n_splits=k_folds, shuffle=True)
     fold_performance = []
@@ -92,14 +61,13 @@ for sample_size in sample_sizes:
     for fold, (train_ids, val_ids) in enumerate(
         kfold.split(X=X_train[:sample_size_len], y=y_train[:sample_size_len])
     ):
-        print(f"Training on {sample_size} samples - Fold {fold+1}/{k_folds}")
+        print(
+            f"Each model training on approx {len(train_ids)//2} samples - Fold {fold+1}/{k_folds}"
+        )
 
         training_fold = X_train[train_ids]
-
-        # Evaluating on Test and Validation Sets
-        # evaluate_gauss_model(true_bayes, training_fold, y_train[train_ids], "Train Set")
-        # evaluate_gauss_model(true_bayes, X_test, y_test, "Test Set")
-        # evaluate_gauss_model(true_bayes, X_val, y_val, "Validation Set")
+        # n_training_samples = len(train_ids)//2
+        assert training_fold.shape[0] == len(train_ids)
 
         #### Evaluating Fitted Gaussian Processes
         print(
@@ -123,40 +91,51 @@ for sample_size in sample_sizes:
         label = fitted_bayes.classify(training_fold)
         assert np.allclose(np.sum(posterior, axis=1), 1.0)
 
-        # Evaluating on Test and Validation Sets
+        # Evaluating on Training set
         train_fitted_metrics, train_y_pred = evaluate_gauss_model(
-            fitted_bayes, training_fold, y_train[train_ids], "Train Set"
+            fitted_bayes, training_fold, y_train[train_ids], dataset_name="Train Set"
         )
+        # Test
+        test_fitted_metrics, test_y_pred = evaluate_gauss_model(
+            fitted_bayes, X_test, y_test, dataset_name="Test Set"
+        )
+        # Validation
+        val_fitted_metrics, val_y_pred = evaluate_gauss_model(
+            fitted_bayes, X_val, y_val, dataset_name="Validation Set"
+        )
+
+        k_fold_metrics[sample_size]["train"].append(train_fitted_metrics)
+        k_fold_metrics[sample_size]["test"].append(test_fitted_metrics)
+        k_fold_metrics[sample_size]["val"].append(val_fitted_metrics)
+
         plot_cm_matrix(
             y=y_train[train_ids],
             y_pred=train_y_pred,
-            n_training_samples=training_fold.shape[1],
+            n_training_samples=training_fold.shape[0],
             dataset_name="Train Set",
             save=True,
             model_name="Process A, B fitted mean and cov Gaussian Process",
-            filepath=f"data/plots/{config['experiment_name']}_mc_gp_train_confusionmatrix",
+            filepath=f"data/plots/gp_confusion_matrices/{config['experiment_name']}_{sample_size}_{fold}fold_mc_gp_train_confusionmatrix",
         )
-        test_fitted_metrics, test_y_pred = evaluate_gauss_model(
-            fitted_bayes, X_test, y_test, "Test Set"
-        )
+
         plot_cm_matrix(
-            y=X_test,
-            y_pred=y_test,
-            n_training_samples=training_fold.shape[1],
+            y=y_test,
+            y_pred=test_y_pred,
+            n_training_samples=training_fold.shape[0],
             dataset_name="Test Set",
             save=True,
             model_name="Process A, B fitted mean and cov Gaussian Process",
-            filepath=f"data/plots/{config['experiment_name']}_mc_gp_test_confusionmatrix",
+            filepath=f"data/plots/gp_confusion_matrices/{config['experiment_name']}_{sample_size}_{fold}fold_mc_gp_test_confusionmatrix",
         )
-        val_fitted_metrics, val_y_pred = evaluate_gauss_model(
-            fitted_bayes, X_val, y_val, "Validation Set"
-        )
+
         plot_cm_matrix(
-            y=X_val,
-            y_pred=y_val,
-            n_training_samples=training_fold.shape[1],
+            y=y_val,
+            y_pred=val_y_pred,
+            n_training_samples=training_fold.shape[0],
             dataset_name="Validation Set",
             save=True,
             model_name="Process A, B fitted mean and cov Gaussian Process",
-            filepath=f"data/plots/{config['experiment_name']}_mc_gp_val_confusionmatrix",
+            filepath=f"data/plots/gp_confusion_matrices/{config['experiment_name']}_{sample_size}_{fold}fold_mc_gp_val_confusionmatrix",
         )
+
+plot_boxplots(k_fold_metrics, sample_sizes, model="FittedGaussianModel")

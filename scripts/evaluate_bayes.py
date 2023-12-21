@@ -15,30 +15,8 @@ from sklearn.metrics import (
 )
 
 from informed_classification import bayes_classifier, generative_models, models
+from informed_classification.analysis import evaluate_gauss_model
 from informed_classification.common_utilities import get_config, load_data
-
-
-def evaluate_gauss_model(classifier, X, y, dataset_name):
-    y_pred = classifier.classify(X)
-    accuracy = accuracy_score(y, y_pred)
-    precision = precision_score(y, y_pred)
-    recall = recall_score(y, y_pred)
-    f1 = f1_score(y, y_pred)
-
-    print(f"Metrics for {dataset_name}:")
-    print(f"Accuracy: {accuracy:.2f}")
-    print(f"Precision: {precision:.2f}")
-    print(f"Recall: {recall:.2f}")
-    print(f"F1 Score: {f1:.2f}")
-
-    # Confusion Matrix
-    cm = confusion_matrix(y, y_pred)
-    sns.heatmap(cm, annot=True, fmt="d")
-    plt.title(f"Confusion Matrix for {dataset_name}")
-    plt.ylabel("Actual label")
-    plt.xlabel("Predicted label")
-    plt.show()
-
 
 config, _ = get_config()
 
