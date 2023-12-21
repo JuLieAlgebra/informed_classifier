@@ -68,6 +68,39 @@ class NominalModel(GenerativeModel):
         """samples from the nominal model"""
         return self.dist.rvs(size=n).reshape((n, self.dim))
 
+    def plot(self, nsamples: int = 10, title: str = ""):
+        """
+        Plot heat map of covariance matrix, plot n sample trajectories, and plot fitted mean
+        function.
+        """
+        fig, axs = plt.subplots(1, 2, sharex=True)
+        fig.suptitle(self.__class__.__name__, fontsize=20)
+
+        axs[0].grid(True, alpha=0.2)
+        axs[0].set_title("Process", fontsize=18)
+        axs[0].set_xlabel("Time (t)", fontsize=16)
+        axs[0].set_ylabel("Value (x)", fontsize=16)
+        axs[0].plot(self.dist.mean, color="k", label="Mean", zorder=3)
+        if nsamples > 0:
+            opacity = np.clip(1.0 / nsamples, 0.01, 1.0)
+            axs[0].plot([], color="b", alpha=opacity, label=f"Samples ({nsamples})")
+            axs[0].plot(self.sample(nsamples).T, color="b", alpha=opacity, zorder=2)
+        axs[0].legend(fontsize=14)
+        axs[1].grid(False)
+        axs[1].set_facecolor("k")
+        axs[1].set_title("Covariance", fontsize=18)
+        axs[1].set_xlabel(r"$t_j$", fontsize=16)
+        axs[1].set_ylabel(r"$t_i$", fontsize=16)
+        img = axs[1].imshow(
+            self.dist.cov,
+            cmap="bone",
+            vmin=np.min(np.abs(self.dist.cov)),
+            vmax=np.max(np.abs(self.dist.cov)),
+            interpolation="lanczos",
+        )
+        fig.colorbar(img)
+        plt.show()
+
 
 class DisruptedModel(GenerativeModel):
     """
@@ -111,6 +144,39 @@ class DisruptedModel(GenerativeModel):
         """samples from the disrupted model"""
         return self.dist.rvs(size=n).reshape((n, self.dim))
 
+    def plot(self, nsamples: int = 10, title: str = ""):
+        """
+        Plot heat map of covariance matrix, plot n sample trajectories, and plot fitted mean
+        function.
+        """
+        fig, axs = plt.subplots(1, 2, sharex=True)
+        fig.suptitle(self.__class__.__name__, fontsize=20)
+
+        axs[0].grid(True, alpha=0.2)
+        axs[0].set_title("Process", fontsize=18)
+        axs[0].set_xlabel("Time (t)", fontsize=16)
+        axs[0].set_ylabel("Value (x)", fontsize=16)
+        axs[0].plot(self.dist.mean, color="k", label="Mean", zorder=3)
+        if nsamples > 0:
+            opacity = np.clip(1.0 / nsamples, 0.01, 1.0)
+            axs[0].plot([], color="b", alpha=opacity, label=f"Samples ({nsamples})")
+            axs[0].plot(self.sample(nsamples).T, color="b", alpha=opacity, zorder=2)
+        axs[0].legend(fontsize=14)
+        axs[1].grid(False)
+        axs[1].set_facecolor("k")
+        axs[1].set_title("Covariance", fontsize=18)
+        axs[1].set_xlabel(r"$t_j$", fontsize=16)
+        axs[1].set_ylabel(r"$t_i$", fontsize=16)
+        img = axs[1].imshow(
+            self.dist.cov,
+            cmap="bone",
+            vmin=np.min(np.abs(self.dist.cov)),
+            vmax=np.max(np.abs(self.dist.cov)),
+            interpolation="lanczos",
+        )
+        fig.colorbar(img)
+        plt.show()
+
 
 if __name__ == "__main__":
     d = 100
@@ -118,6 +184,14 @@ if __name__ == "__main__":
 
     nominal = NominalModel(d)
     disrupted = DisruptedModel(d)
+
+    # Extra information plots about each ground-truth process
+    nominal.plot(
+        title="Ground-Truth Nominal Model\nMean function, sample trajectories, and covariance function"
+    )
+    disrupted.plot(
+        title="Ground-Truth Disrupted Model\nMean function, sample trajectories, and covariance function"
+    )
 
     fig, axs = plt.subplots(1, 2, sharex=True, sharey=True)
     fig.suptitle("Samples from Nominal and Disrupted Time Series")
