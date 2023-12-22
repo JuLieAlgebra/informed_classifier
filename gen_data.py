@@ -8,6 +8,7 @@ import yaml
 from informed_classification import generative_models
 from informed_classification.common_utilities import get_config, update_experiment_name
 
+### CONFIGURATION
 config, config_filename = get_config()
 dim = config["dim"]
 samples = config["samples"]
