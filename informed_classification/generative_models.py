@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Union
 
+import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy import stats as ss
@@ -108,8 +109,12 @@ class DisruptedModel(GenerativeModel):
     Is a Gaussian Process
     """
 
-    def __init__(self, dim: int):
+    def __init__(self, dim: int, mean_perturbance=0.0, cov_disruption=1e-1):
         super().__init__(dim)
+        # Parameters controlling how "perturbed" this model is from Nominal
+        self.mean_perturbance = mean_perturbance
+        self.cov_disruption = cov_disruption
+
         self._version = "2.0"
         self.dist = ss.multivariate_normal(
             mean=[self.mean(t) for t in range(self.dim)],
@@ -120,8 +125,12 @@ class DisruptedModel(GenerativeModel):
         )
 
     def mean(self, t: Union[float, np.array]) -> Union[float, np.array]:
-        """computes the mean function at index t"""
-        return np.exp(-t / 10)
+        """
+        Computes the mean function at index t.
+        By default mean_perturbance is 0.0, which reduces to the same mean function as the
+        Nominal model.
+        """
+        return np.exp(-t / 10) + self.mean_perturbance * t**2
 
     def cov(
         self, t1: Union[float, np.array], t2: Union[float, np.array]
@@ -134,7 +143,7 @@ class DisruptedModel(GenerativeModel):
         process = 1e-3 * np.exp(-((t1 - t2) ** 2) / 100.0)
         noise = 1e-6 if t1 == t2 else 0.0
         disruption = 1e-7 * t1 * t2 + 1e-3 * np.exp(-np.sin((t1 - t2) / 2.0) ** 2 / 4.0)
-        return process + noise + 1e-1 * disruption
+        return process + noise + self.cov_disruption * disruption
 
     def p(self, x: Union[float, np.array]) -> Union[float, np.array]:
         """probability density at x"""
