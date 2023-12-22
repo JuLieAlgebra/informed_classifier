@@ -165,6 +165,62 @@ def plot_multiple_boxplots(metrics_list, sample_sizes, models):
         plt.close()
 
 
+def plot_paramsweep_multiple_boxplots(
+    metrics_list, sample_sizes, models, param_name, param_val
+):
+    # Define colors for each model
+    model_colors = sns.color_palette("hsv", len(models))
+    edge_colors = {
+        model: darken_color(color) for model, color in zip(models, model_colors)
+    }
+
+    for i, metric in enumerate(["accuracy", "precision", "recall", "f1"]):
+        plt.figure(figsize=(12, 8))
+        all_metric_data = []
+
+        # Prepare the data for all models for the specific metric
+        for fold_metrics, model, color in zip(metrics_list, models, model_colors):
+            for size in sample_sizes:
+                metric_values = [
+                    fold_metric[metric] for fold_metric in fold_metrics[size]["val"]
+                ]
+                all_metric_data.extend(
+                    [(size, value, model, color) for value in metric_values]
+                )
+
+        plot_data = pd.DataFrame(
+            all_metric_data, columns=["Sample Size", "Score", "Model", "Color"]
+        )
+
+        # Plot boxplots
+        sns.boxplot(
+            x="Sample Size",
+            y="Score",
+            hue="Model",
+            data=plot_data,
+            palette=dict(zip(models, model_colors)),
+            dodge=True,
+            linewidth=2,
+            fill=False,
+        )
+
+        plt.title(
+            f"Boxplot of {metric.capitalize()} by Sample Size and Model\non {param_name} equals {param_val}"
+        )
+        plt.xlabel("Training Set Size")
+        plt.ylabel(f"{metric.capitalize()} Score")
+        plt.xticks(rotation=45)
+        plt.ylim(0, 1)  # Adjust y-axis limits
+        plt.legend(title="Model")
+        plt.tight_layout()
+
+        plt.savefig(
+            f"data/plots/boxplot_{metric}_{param_name}{param_val}.png",
+            bbox_inches="tight",
+        )
+        plt.close()
+
+
 def evaluate_svm_model(model, X, y, dataset_name) -> tuple[dict, np.array]:
     y_pred = model.predict(X)
     accuracy = accuracy_score(y, y_pred)
