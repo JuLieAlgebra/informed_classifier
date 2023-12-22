@@ -27,7 +27,8 @@ class BayesClassifier:
         post = np.array([self.joint(c, x) / evidence for c in self.classes]).T
         if np.any(~np.isfinite(post)):
             print(
-                f"Encountered non-finite values in output at indicies {np.where(~np.isfinite(post))}, replacing with uniform."
+                f"Encountered non-finite values in output at indicies \
+                {np.where(~np.isfinite(post))}, replacing with uniform."
             )
             post[np.any(~np.isfinite(post), axis=1), :] = 1 / post.shape[1]
         return post

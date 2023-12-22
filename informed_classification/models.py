@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats as ss
 
@@ -30,6 +31,7 @@ class FittedGaussianModel(GenerativeModel):
     """
 
     def __init__(self, data: np.array):
+        self.data_shape = data.shape
         self.mean_vec, self.cov_mat = self.mle(data)
         self.dist = ss.multivariate_normal(
             mean=self.mean_vec,
@@ -57,12 +59,51 @@ class FittedGaussianModel(GenerativeModel):
         """samples from the nominal model"""
         return self.dist.rvs(size=n).reshape((n, self.dim))
 
-    def plot(self, title: str = ""):
+    def plot(
+        self,
+        nsamples: int = 10,
+        title: str = "",
+        save=True,
+        filepath="data/plots/figure",
+    ):
         """
-        Plot heat map of covariance matrix, plot 10 sample trajectories, and plot fitted mean
+        Plot heat map of covariance matrix, plot n sample trajectories, and plot fitted mean
         function.
         """
-        pass
+        fig, axs = plt.subplots(1, 2, sharex=True)
+        fig.suptitle(
+            f"{self.__class__.__name__} trained on {self.data_shape[0]} samples",
+            fontsize=20,
+        )
+
+        axs[0].grid(True, alpha=0.2)
+        axs[0].set_title("Process", fontsize=18)
+        axs[0].set_xlabel("Time (t)", fontsize=16)
+        axs[0].set_ylabel("Value (x)", fontsize=16)
+        axs[0].plot(self.dist.mean, color="k", label="Mean", zorder=3)
+        if nsamples > 0:
+            opacity = np.clip(1.0 / nsamples, 0.01, 1.0)
+            axs[0].plot([], color="b", alpha=opacity, label=f"Samples ({nsamples})")
+            axs[0].plot(self.sample(nsamples).T, color="b", alpha=opacity, zorder=2)
+        axs[0].legend(fontsize=14)
+        axs[1].grid(False)
+        axs[1].set_facecolor("k")
+        axs[1].set_title("Covariance", fontsize=18)
+        axs[1].set_xlabel(r"$t_j$", fontsize=16)
+        axs[1].set_ylabel(r"$t_i$", fontsize=16)
+        img = axs[1].imshow(
+            self.dist.cov,
+            cmap="bone",
+            vmin=np.min(np.abs(self.dist.cov)),
+            vmax=np.max(np.abs(self.dist.cov)),
+            interpolation="lanczos",
+        )
+        fig.colorbar(img)
+        if save:
+            plt.savefig(filepath, bbox_inches="tight")
+            plt.close()
+        else:
+            plt.show()
 
 
 class FittedMeanGaussianModel(FittedGaussianModel):
@@ -77,6 +118,7 @@ class FittedMeanGaussianModel(FittedGaussianModel):
     """
 
     def __init__(self, data: np.array, process_type: str):
+        self.data_shape = data.shape
         model_lookup = {"nominal": NominalModel, "disrupted": DisruptedModel}
         self.mean_vec = self.mle(data)
         self.cov_mat = model_lookup[process_type](dim=data.shape[1]).dist.cov
@@ -105,6 +147,7 @@ class FittedCovGaussianModel(FittedGaussianModel):
     """
 
     def __init__(self, data: np.array, process_type: str):
+        self.data_shape = data.shape
         model_lookup = {"nominal": NominalModel, "disrupted": DisruptedModel}
         self.mean_vec = model_lookup[process_type](dim=data.shape[1]).dist.mean
         self.cov_mat = self.mle(data)
@@ -143,6 +186,16 @@ if __name__ == "__main__":
         cov_disrupted_model = FittedCovGaussianModel(
             data=data, process_type="disrupted"
         )
+
+        models = [
+            model,
+            mean_nominal_model,
+            mean_disrupted_model,
+            cov_nominal_model,
+            cov_disrupted_model,
+        ]
+        for m in models:
+            m.plot(nsamples=5)
 
         ## Plotting the results
         fig, axes = plt.subplots(1, 5, figsize=(23, 5))
