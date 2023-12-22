@@ -24,11 +24,6 @@ from informed_classification.analysis import (
 )
 from informed_classification.common_utilities import get_config, load_data
 
-# Evaluating on Test and Validation Sets
-# _, _ = evaluate_gauss_model(true_bayes, training_fold, y_train[train_ids], "Train Set")
-# _, _ = evaluate_gauss_model(true_bayes, X_test, y_test, "Test Set")
-# _, _ = evaluate_gauss_model(true_bayes, X_val, y_val, "Validation Set")
-
 config, _ = get_config()
 
 # Load datasets
@@ -137,5 +132,15 @@ for sample_size in sample_sizes:
             model_name="Process A, B fitted mean and cov Gaussian Process",
             filepath=f"data/plots/gp_confusion_matrices/{config['experiment_name']}_{sample_size}_{fold}fold_mc_gp_val_confusionmatrix",
         )
+
+        if fold == 1:
+            fitted_nominal.plot(
+                save=True,
+                filepath=f"data/plots/details_nominal_mc_gp_{config['experiment_name']}_{sample_size}_{fold}fold",
+            )
+            fitted_disrupted.plot(
+                save=True,
+                filepath=f"data/plots/details_disrupted_mc_gp_{config['experiment_name']}_{sample_size}_{fold}fold",
+            )
 
 plot_boxplots(k_fold_metrics, sample_sizes, model="FittedGaussianModel")

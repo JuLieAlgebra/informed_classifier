@@ -38,23 +38,14 @@ X_train, y_train = train_data[:, :-1], train_data[:, -1]
 X_test, y_test = test_data[:, :-1], test_data[:, -1]
 X_val, y_val = validation_data[:, :-1], validation_data[:, -1]
 
-# #### Evaluating True Gaussian Processes
-# nominal = generative_models.NominalModel(config["dim"])
-# disrupted = generative_models.DisruptedModel(config["dim"])
-# true_bayes = bayes_classifier.BayesClassifier(
-#     [config["ratio"], 1 - config["ratio"]], [nominal, disrupted]
-# )
-
 ### If I want each sample size to be 20, then I have to give kfold roughly sample*5*2
 per_model_sample_sizes = [20, 40, 100, 200, 300, 500, 800, 1000, 2000]
 sample_sizes = [s * 2 for s in per_model_sample_sizes]
 k_folds = 5
 k_fold_metrics = {size: {"train": [], "test": [], "val": []} for size in sample_sizes}
 
-# Scaling the dataset
+# Scaling the dataset!
 scaler = StandardScaler()
-
-# Assuming X_train, X_test, and X_val are your data splits
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 X_val_scaled = scaler.transform(X_val)
@@ -80,8 +71,6 @@ for sample_size in sample_sizes:
             "Disrupted samples in train: ",
             training_fold[y_train[train_ids] == 1].shape,
         )
-        # if training_fold[y_train[train_ids] == 0].shape[0] == 0 or training_fold[y_train[train_ids] == 1].shape[0] ==0:
-        #     continue
 
         # SVM with Gaussian RBF Kernel
         svm_model = SVC(kernel="rbf")
