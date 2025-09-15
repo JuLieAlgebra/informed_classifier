@@ -34,14 +34,14 @@ We sweep the spectrum from "oracle knowledge" to "no prior knowledge":
    - **FittedGaussianModel**: estimate both mean and covariance for each class ($\hat\mu,\hat\Sigma$).
    - **FittedMeanGaussianModel**: estimate only means, use a shared/assumed covariance.
    - **FittedCovGaussianModel**: assume mean, estimate covariances.
-   - These form a family of **plug-in Bayes** classifiers; performance tracks the quality of $\hat\mu,\hat\Sigma$.
+   - These form a family of **Informed Classifier** classifiers; performance tracks the quality of $\hat\mu,\hat\Sigma$.
 
 3. **Discriminative baseline** - a standard SVM (RBF) trained on trajectories (optionally with simple normalization/whitening). This represents **no physics prior** and serves as a control.
 
 ## Key idea
 
 > **How much partial generative knowledge is enough to consistently outperform a generic discriminative model?**  
-> By sweeping what we fit (mean only, cov only, both) and the size of the labeled dataset, we chart where informed plug-in Bayes wins versus an SVM.
+> By sweeping what we fit (mean only, cov only, both) and the size of the labeled dataset, we chart where informed Informed Classifier wins versus an SVM.
 
 ## Dataset
 
@@ -62,11 +62,26 @@ See `informed_classification/generative_models.py` for exact kernels and samplin
 ### Nominal
 <img src="docs/media/fitted_nominal_model_progress.gif" width="600" height="500" />
 
+### Validation confusion matrices
+
+Row-normalized confusion matrices on the held-out **validation** set (rows = true class, columns = predicted class).
+
+| Oracle Bayes (true GP) | Informed Classifier (fitted GP) | SVM baseline |
+|:--:|:--:|:--:|
+| ![Oracle Bayes (true GP)](docs/media/true_gp_confusion_val.gif) | ![Informed Classifier (fitted GP)](docs/media/gp_confusion_val.gif) | ![SVM baseline](docs/media/svm_confusion_val.gif) |
+
+**How to read these:** diagonal = correct predictions; off-diagonal = misclassifications.  
+**Typical pattern we observe:**
+- **Oracle Bayes** is near-identity (upper-left/lower-right bright), setting the ceiling.
+- **Fitted GP (Informed Classifier)** approaches the oracle as mean/covariance estimates improve with more data.
+- **SVM baseline** tends to confuse classes when separability is primarily in **covariance** rather than mean differences; whitening helps but doesn’t fully close the gap.
+
+
 **Takeaways (see report for more details):**
 - The **oracle Bayes** sets the ceiling.
 - With modest data, **fitted generative** models often **outperform SVM**, especially when classes differ primarily in covariance structure (a classic weak spot for margin methods on raw trajectories).
 - Normalization helps SVM, but when separability is mostly in **covariance**, the informed models have a clear edge.
-- As data grows and the fitted $\hat\mu,\hat\Sigma$ improve, plug-in Bayes approaches the oracle.
+- As data grows and the fitted $\hat\mu,\hat\Sigma$ improve, Informed Classifier approaches the oracle.
 
 ## Setup
 
