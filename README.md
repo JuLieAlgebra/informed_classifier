@@ -11,11 +11,11 @@ If operators can **detect** impending or ongoing disruption states (ideally, the
 
 ## Problem setup (toy analogue of disruption detection)
 
-We study a controlled two-class time-series classification problem that mirrors "nominal vs disrupted" plasma states:
+We study a controlled two-class time-series classification problem that mirrors “nominal vs disrupted” plasma states:
 
 - Two hidden states generate length-T trajectories:
-  - **Nominal**: a finite-time Gaussian process with mean $ \mu_A(t) $ and covariance $ \Sigma_A $.
-  - **Disrupted**: a finite-time Gaussian process with mean $ \mu_B(t) $ and covariance $ \Sigma_B $.
+  - **Nominal:** a finite-time Gaussian process with mean μ<sub>A</sub>(t) and covariance Σ<sub>A</sub>.
+  - **Disrupted:** a finite-time Gaussian process with mean μ<sub>B</sub>(t) and covariance Σ<sub>B</sub>.
 - We can sample labeled trajectories from each class and wish to predict the class of a new trajectory.
 - We then **vary how much of the true generative structure we "know"** and compare to a purely discriminative baseline.
 
@@ -28,15 +28,16 @@ As a sanity check: if you knew the *true* class-conditional distributions, the *
 ## Models
 We sweep the spectrum from "oracle knowledge" to "no prior knowledge":
 
-1. **Bayes (oracle)** - uses the *true* $ \mu_A,\Sigma_A $ and $ \mu_B,\Sigma_B $ to compute class-conditional likelihoods and the Bayes decision rule. This is the unattainable gold standard.
+1. **Bayes (oracle)** - uses the *true* $\mu_A,\Sigma_A$ and $\mu_B,\Sigma_B$ to compute class-conditional likelihoods and the Bayes decision rule. This is the optimal classifier.
 
-2. **Informed generative models (fitted GPs)** - we *estimate* parts of the generative structure from data:
-   - **FittedGaussianModel**: estimate both mean and covariance for each class ($\hat\mu,\hat\Sigma$).
-   - **FittedMeanGaussianModel**: estimate only means, use a shared/assumed covariance.
-   - **FittedCovGaussianModel**: assume mean, estimate covariances.
-   - These form a family of **Informed Classifier** classifiers; performance tracks the quality of $\hat\mu,\hat\Sigma$.
+2. **Informed generative models (fitted GPs)** — we estimate parts of the generative structure from data:
 
-3. **Discriminative baseline** - a standard SVM (RBF) trained on trajectories (optionally with simple normalization/whitening). This represents **no physics prior** and serves as a control.
+- **FittedGaussianModel:** estimate both mean and covariance for each class (μ<sup>̂</sup>, Σ<sup>̂</sup>).
+- **FittedMeanGaussianModel:** estimate only means; use true covariance of the underlying process.
+- **FittedCovGaussianModel:** assume the mean; estimate covariances.
+- These form a family of **Informed Classifier** classifiers; performance tracks the quality of μ<sup>̂</sup>, Σ<sup>̂</sup>.
+
+3. **Discriminative baseline** - a standard SVM (RBF) trained on trajectories (with simple normalization/whitening). This represents **no physics prior** and serves as a control.
 
 ## Key idea
 
@@ -76,10 +77,9 @@ Row-normalized confusion matrices on the held-out **validation** set (rows = tru
 - **Fitted GP (Informed Classifier)** approaches the oracle as mean/covariance estimates improve with more data.
 - **SVM baseline** tends to confuse classes when separability is primarily in **covariance** rather than mean differences; whitening helps but doesn’t fully close the gap.
 
-
 **Takeaways (see report for more details):**
-- The **oracle Bayes** sets the ceiling.
-- With modest data, **fitted generative** models often **outperform SVM**, especially when classes differ primarily in covariance structure (a classic weak spot for margin methods on raw trajectories).
+- The **oracle Bayes** is the optimal classifier and sets the performance ceiling.
+- When the GP fit is not ill-conditioned due to low data, **fitted generative** models often **outperform SVM**, especially when classes differ primarily in covariance structure (a classic weak spot for margin methods on raw trajectories).
 - Normalization helps SVM, but when separability is mostly in **covariance**, the informed models have a clear edge.
 - As data grows and the fitted $\hat\mu,\hat\Sigma$ improve, Informed Classifier approaches the oracle.
 
