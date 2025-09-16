@@ -7,7 +7,12 @@ Tokamaks are donut-shaped magnetic-confinement fusion devices that keep plasma s
 
 If operators can **detect** impending or ongoing disruption states (ideally, the *type* of disruption) with enough lead time, mitigation systems (e.g., impurity injection) can trigger to limit damage [1]. Historically, real-time prediction/avoidance has relied on hand-crafted features and thresholds, plus classical ML (SVM/Random Forest/GBMs) integrated into control systems on several machines [6–10]. Deep-learning predictors and transfer-learning across devices are active research fronts [7,9,11].
 
-**Why "informed" classification?** Many disruptive/nominal regimes have partial physics models, but real-time deployment can be constrained by missing physics or computational cost. Nominal plasma behavior is described by MHD/equilibrium theory (e.g., Grad–Shafranov) [12,13], while for *statistical* time-series modeling, Gaussian processes (GPs) are a flexible way to encode priors over trajectories [14,15]. The question this repo explores is: **when does using approximate generative knowledge (means/covariances) to build a Bayes-style classifier beat generic discriminative baselines?** This is an experiment physics-/knowledge-informed ML [16].
+**Why "informed" classification?** Many disruptive/nominal regimes have partial physics models, but real-time deployment can be constrained by missing physics or computational cost. Nominal plasma behavior is described by MHD/equilibrium theory (e.g., Grad–Shafranov) [12,13], while for *statistical* time-series modeling, Gaussian processes (GPs) are a flexible way to encode priors over trajectories [14,15]. 
+
+In reality, we rarely have complete knowledge about the trajectories our dynamic system's states come from. If we knew nothing, it's clear that a traditional discriminative approach would be the best choice (NN, SVM, Random Forest, ...). If we knew the conditional distributions of nominal and disrupted/anomalous states, the optimal choice would be to use those as a Bayes classifier [16]. But what if we only knew the distribution of one state? Partial knowledge of a time-varying mean vector based on known physics? The covariance of the two states over time? 
+
+The question this repo explores is: **when does using approximate knowledge about the conditional distributions beat generic discriminative baselines?** 
+This aims to cut at an ongoing question in hybrid-ML (physics-/knowledge-informed), particularly for disruption prediction for nuclear fusion devices.
 
 ## Problem setup (toy analogue of disruption detection)
 
@@ -142,7 +147,7 @@ Then run the script to evaluate the models based on the generated data:
 
 [15] Görtler, J., Kehlbeck, R., Deussen, O., *A Visual Exploration of Gaussian Processes*, **Distill**, 2019. https://distill.pub/2019/visual-exploration-gaussian-processes/
 
-[16] Karniadakis, G.E., Kevrekidis, I.G., Lu, L., Perdikaris, P., Wang, S., Yang, L., *Physics-informed machine learning*, **Nature Reviews Physics**, 2021. https://doi.org/10.1038/s42254-021-00314-5
+[16] Hastie, T., Tibshirani, R., Friedman, J., *The Elements of Statistical Learning* (2nd ed., “The Bayes Classifier”), **Springer**, 2009. https://hastie.su.domains/ElemStatLearn/
 
 [17] Bishop, C.M., *Pattern Recognition and Machine Learning* (Bayes decision theory, Ch. 1), **Springer**, 2006. (Open PDF) https://www.microsoft.com/en-us/research/uploads/prod/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf
 
