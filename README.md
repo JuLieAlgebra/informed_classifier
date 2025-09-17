@@ -7,15 +7,20 @@ Tokamaks are donut-shaped magnetic-confinement fusion devices that keep plasma s
 
 If operators can **detect** impending or ongoing disruption states (ideally, the *type* of disruption) with enough lead time, mitigation systems (e.g., impurity injection) can trigger to limit damage [1]. Historically, real-time prediction/avoidance has relied on hand-crafted features and thresholds, plus classical ML (SVM/Random Forest/GBMs) integrated into control systems on several machines [6–10]. Deep-learning predictors and transfer-learning across devices are active research fronts [7,9,11].
 
-**Why "informed" classification?** Many disruptive/nominal regimes have partial physics models, but real-time deployment can be constrained by missing physics or computational cost. Nominal plasma behavior is described by MHD/equilibrium theory (e.g., Grad–Shafranov) [12,13], while for *statistical* time-series modeling, Gaussian processes (GPs) are a flexible way to encode priors over trajectories [14,15]. The question this repo explores is: **when does using approximate generative knowledge (means/covariances) to build a Bayes-style classifier beat generic discriminative baselines?** This is an experiment physics-/knowledge-informed ML [16].
+**Why "informed" classification?** Many disruptive/nominal regimes have partial physics models, but real-time deployment can be constrained by missing physics or computational cost. Nominal plasma behavior is described by MHD/equilibrium theory (e.g., Grad–Shafranov) [12,13], while for *statistical* time-series modeling, Gaussian processes (GPs) are a flexible way to encode priors over trajectories [14,15]. 
+
+In reality, we rarely have complete knowledge about the trajectories our dynamic system's states come from. If we knew nothing, it's clear that a traditional discriminative approach would be the best choice (NN, SVM, Random Forest, ...). If we knew the conditional distributions of nominal and disrupted/anomalous states, the optimal choice would be to use those as a Bayes classifier [16]. But what if we only knew the distribution of one state? Partial knowledge of a time-varying mean vector based on known physics? The covariance of the two states over time? 
+
+The question this repo explores is: **when does using approximate knowledge about the conditional distributions beat generic discriminative baselines?** 
+This aims to cut at an ongoing question in hybrid-ML (physics-/knowledge-informed), particularly for disruption prediction for nuclear fusion devices.
 
 ## Problem setup (toy analogue of disruption detection)
 
-We study a controlled two-class time-series classification problem that mirrors "nominal vs disrupted" plasma states:
+We study a controlled two-class time-series classification problem that mirrors “nominal vs disrupted” plasma states:
 
 - Two hidden states generate length-T trajectories:
-  - **Nominal**: a finite-time Gaussian process with mean $ \mu_A(t) $ and covariance $ \Sigma_A $.
-  - **Disrupted**: a finite-time Gaussian process with mean $ \mu_B(t) $ and covariance $ \Sigma_B $.
+  - **Nominal:** a finite-time Gaussian process with mean μ<sub>A</sub>(t) and covariance Σ<sub>A</sub>.
+  - **Disrupted:** a finite-time Gaussian process with mean μ<sub>B</sub>(t) and covariance Σ<sub>B</sub>.
 - We can sample labeled trajectories from each class and wish to predict the class of a new trajectory.
 - We then **vary how much of the true generative structure we "know"** and compare to a purely discriminative baseline.
 
@@ -28,15 +33,17 @@ As a sanity check: if you knew the *true* class-conditional distributions, the *
 ## Models
 We sweep the spectrum from "oracle knowledge" to "no prior knowledge":
 
-1. **Bayes (oracle)** - uses the *true* $ \mu_A,\Sigma_A $ and $ \mu_B,\Sigma_B $ to compute class-conditional likelihoods and the Bayes decision rule. This is the unattainable gold standard.
+1. **Bayes (oracle)** - uses the *true* $\mu_A,\Sigma_A$ and $\mu_B,\Sigma_B$ to compute class-conditional likelihoods and the Bayes decision rule. This is the optimal classifier.
 
-2. **Informed generative models (fitted GPs)** - we *estimate* parts of the generative structure from data:
-   - **FittedGaussianModel**: estimate both mean and covariance for each class ($\hat\mu,\hat\Sigma$).
-   - **FittedMeanGaussianModel**: estimate only means, use a shared/assumed covariance.
-   - **FittedCovGaussianModel**: assume mean, estimate covariances.
-   - These form a family of **Informed Classifier** classifiers; performance tracks the quality of $\hat\mu,\hat\Sigma$.
+2. **Informed generative models (fitted GPs)** — we estimate parts of the generative structure from data:
 
-3. **Discriminative baseline** - a standard SVM (RBF) trained on trajectories (optionally with simple normalization/whitening). This represents **no physics prior** and serves as a control.
+    - **FittedGaussianModel:** estimate both mean and covariance for each class (μ<sup>̂</sup>, Σ<sup>̂</sup>).
+    - **FittedMeanGaussianModel:** estimate only means; use true covariance of the underlying process.
+    - **FittedCovGaussianModel:** assume the mean; estimate covariances.
+
+    These form a family of **Informed Classifier** classifiers; performance tracks the quality of μ<sup>̂</sup>, Σ<sup>̂</sup>.
+
+3. **Discriminative baseline** - a standard SVM (RBF) trained on trajectories (with simple normalization/whitening). This represents **no physics prior** and serves as a control.
 
 ## Key idea
 
@@ -76,10 +83,9 @@ Row-normalized confusion matrices on the held-out **validation** set (rows = tru
 - **Fitted GP (Informed Classifier)** approaches the oracle as mean/covariance estimates improve with more data.
 - **SVM baseline** tends to confuse classes when separability is primarily in **covariance** rather than mean differences; whitening helps but doesn’t fully close the gap.
 
-
 **Takeaways (see report for more details):**
-- The **oracle Bayes** sets the ceiling.
-- With modest data, **fitted generative** models often **outperform SVM**, especially when classes differ primarily in covariance structure (a classic weak spot for margin methods on raw trajectories).
+- The **oracle Bayes** is the optimal classifier and sets the performance ceiling.
+- When the GP fit is not ill-conditioned due to low data, **fitted generative** models often **outperform SVM**, especially when classes differ primarily in covariance structure (a classic weak spot for margin methods on raw trajectories).
 - Normalization helps SVM, but when separability is mostly in **covariance**, the informed models have a clear edge.
 - As data grows and the fitted $\hat\mu,\hat\Sigma$ improve, Informed Classifier approaches the oracle.
 
@@ -142,7 +148,7 @@ Then run the script to evaluate the models based on the generated data:
 
 [15] Görtler, J., Kehlbeck, R., Deussen, O., *A Visual Exploration of Gaussian Processes*, **Distill**, 2019. https://distill.pub/2019/visual-exploration-gaussian-processes/
 
-[16] Karniadakis, G.E., Kevrekidis, I.G., Lu, L., Perdikaris, P., Wang, S., Yang, L., *Physics-informed machine learning*, **Nature Reviews Physics**, 2021. https://doi.org/10.1038/s42254-021-00314-5
+[16] Hastie, T., Tibshirani, R., Friedman, J., *The Elements of Statistical Learning* (2nd ed., “The Bayes Classifier”), **Springer**, 2009. https://hastie.su.domains/ElemStatLearn/
 
 [17] Bishop, C.M., *Pattern Recognition and Machine Learning* (Bayes decision theory, Ch. 1), **Springer**, 2006. (Open PDF) https://www.microsoft.com/en-us/research/uploads/prod/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf
 
