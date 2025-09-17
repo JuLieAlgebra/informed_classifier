@@ -37,10 +37,11 @@ We sweep the spectrum from "oracle knowledge" to "no prior knowledge":
 
 2. **Informed generative models (fitted GPs)** — we estimate parts of the generative structure from data:
 
-- **FittedGaussianModel:** estimate both mean and covariance for each class (μ<sup>̂</sup>, Σ<sup>̂</sup>).
-- **FittedMeanGaussianModel:** estimate only means; use true covariance of the underlying process.
-- **FittedCovGaussianModel:** assume the mean; estimate covariances.
-- These form a family of **Informed Classifier** classifiers; performance tracks the quality of μ<sup>̂</sup>, Σ<sup>̂</sup>.
+    - **FittedGaussianModel:** estimate both mean and covariance for each class (μ<sup>̂</sup>, Σ<sup>̂</sup>).
+    - **FittedMeanGaussianModel:** estimate only means; use true covariance of the underlying process.
+    - **FittedCovGaussianModel:** assume the mean; estimate covariances.
+
+    These form a family of **Informed Classifier** classifiers; performance tracks the quality of μ<sup>̂</sup>, Σ<sup>̂</sup>.
 
 3. **Discriminative baseline** - a standard SVM (RBF) trained on trajectories (with simple normalization/whitening). This represents **no physics prior** and serves as a control.
 
