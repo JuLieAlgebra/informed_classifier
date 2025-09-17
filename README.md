@@ -90,9 +90,6 @@ Row-normalized confusion matrices on the held-out **validation** set (rows = tru
 - As data grows and the fitted $\hat\mu,\hat\Sigma$ improve, Informed Classifier approaches the oracle.
 
 ## Setup
-
-
-## Setup
 Python $\ge$ $3.9 is required for this repo, it was developed with Python 3.11.5.
 
 Install Poetry:
